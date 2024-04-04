@@ -124,3 +124,23 @@ plt.show()
 
 # Problem 4
 
+# simulating source location and measurements
+sx, sy = np.random.uniform(size=2)
+x, y = np.random.uniform(size=2)
+belief = np.full((num_points, num_points), 1/(num_points*num_points))
+z = []
+for i in range(10):
+    z = np.random.uniform()
+    if z < np.exp(-100 * (np.linalg.norm(np.array((x, y)) - np.array((sx, sy))) - 0.2)**2):
+        z = 1
+    else:
+        z = 0
+    sum = np.zeros(belief.shape)
+    for j in range(belief.shape[0]):
+        for k in range(belief.shape[1]):
+            sum += belief[j,k] * belief
+    belief = belief[int(num_points*x), int(num_points*y)] * belief / sum
+print(belief)
+
+# the theorem of total probability is how to solve this
+# maybe? I think I also might need to use the equation from problem 2
