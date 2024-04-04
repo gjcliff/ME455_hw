@@ -22,7 +22,7 @@ for i in range(num_points):
     y.append(yi)
     z.append(zi)
 
-def f(X,Y):
+def f(X,Y,s):
     Z = np.zeros((X.shape))
     for i in range(X.shape[0]):
         for j in range(X.shape[1]):
@@ -38,13 +38,13 @@ X, Y = np.meshgrid(x_points, y_points)
 
 # Plot the points
 fig, ax = plt.subplots(facecolor='white')
-plt.contourf(X, Y, f(X,Y), levels=6, cmap='gray')
+plt.contourf(X, Y, f(X,Y,s), levels=6, cmap='gray')
 plt.scatter(x_pos, y_pos, c='green', label='Positive Signal')
 plt.scatter(x_neg, y_neg, c='red', label='Negative Signal')
 plt.plot(s[0], s[1], color='blue', marker='x', markersize=15, markeredgewidth=5, label='Source')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.title('Scatter Plot')
+plt.xlabel('y', fontsize=15)
+plt.ylabel('x', fontsize=15)
+plt.title('Problem 1', fontsize=20)
 plt.gca().set_facecolor('black')
 plt.gca().set_aspect('equal', adjustable='box')
 plt.legend(loc='upper right')
@@ -75,4 +75,52 @@ plt.gca().set_facecolor('black')
 plt.gca().set_aspect('equal', adjustable='box')
 plt.legend(loc='upper right')
 plt.show()
+
+# Problem 3
+def take_measurement(num_points, sx, sy):
+    x_tmp, x_pos_tmp, x_neg_tmp, y_tmp, y_pos_tmp, y_neg_tmp, z_tmp = [], [], [], [], [], [], []
+    for i in range(num_points):
+        xi, yi, u = np.random.uniform(size=3)
+        zi = 0
+        if u < np.exp(-100 * (np.linalg.norm(np.array((xi, yi)) - np.array((sx, sy))) - 0.2)**2):
+            zi = 1
+            x_pos_tmp.append(xi)
+            y_pos_tmp.append(yi)
+        else:
+            zi = 0
+            x_neg_tmp.append(xi)
+            y_neg_tmp.append(yi)
+        x_tmp.append(xi)
+        y_tmp.append(yi)
+        z_tmp.append(zi)
+    return (x_tmp, x_pos_tmp, x_neg_tmp, y_tmp, y_pos_tmp, y_neg_tmp, z_tmp)
+
+def likelihood(Sx, Sy, x, y, z):
+    likelihood = np.ones((Sx.shape))
+    for i in range(Sx.shape[0]):
+        for j in range(Sx.shape[1]):
+            for k in range(len(z)):
+                if z[k] == 1:
+                    likelihood[i,j] *= np.exp(-100 * (np.linalg.norm(np.array((x[k], y[k])) - (Sx[i,j], Sy[i,j])) - 0.2)**2) 
+                else:
+                    likelihood[i,j] *= 1 - np.exp(-100 * (np.linalg.norm(np.array((x[k], y[k])) - s) - 0.2)**2)
+    return likelihood
+
+sx, sy = np.random.uniform(size=2)
+x, x_pos, x_neg, y, y_pos, y_neg, z = take_measurement(num_points, sx, sy)
+# Plot the points
+fig, ax = plt.subplots(facecolor='white')
+plt.contourf(X, Y, likelihood(X,Y,x,y,z), levels=6, cmap='gray')
+plt.scatter(x_pos, y_pos, c='green', label='Positive Signal')
+plt.scatter(x_neg, y_neg, c='red', label='Negative Signal')
+plt.plot(sx, sy, color='blue', marker='x', markersize=15, markeredgewidth=5, label='Source')
+plt.xlabel('y', fontsize=15)
+plt.ylabel('x', fontsize=15)
+plt.title('Problem 3', fontsize=20)
+plt.gca().set_facecolor('black')
+plt.gca().set_aspect('equal', adjustable='box')
+plt.legend(loc='upper right')
+plt.show()
+
+# Problem 4
 
