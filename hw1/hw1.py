@@ -10,7 +10,7 @@ x1, x_pos, x_neg, y1, y_pos, y_neg, z1 = [], [], [], [], [], [], []
 for i in range(num_points):
     xi, yi, u = np.random.uniform(size=3)
     zi = 0
-    if u < np.exp(-100 * (np.linalg.norm(np.array((xi, yi)) - s) - 0.2)**2):
+    if u < np.exp(-100 * (np.linalg.norm(np.array((xi, yi)) - s1) - 0.2)**2):
         zi = 1
         x_pos.append(xi)
         y_pos.append(yi)
