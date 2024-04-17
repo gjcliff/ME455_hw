@@ -155,7 +155,7 @@ for i in range(measurements):
     x5, y5 = np.random.uniform(size=2)
     z = np.random.uniform()
     if z < np.exp(-100 * (np.linalg.norm(np.array((x5, y5)) - s1) - 0.2)**2):
-        for j in range(X.shape[-1]):
+        for j in range(X.shape[0]):
             for k in range(X.shape[1]):
                 belief[j,k] *= np.exp(-100 * (np.linalg.norm(np.array((x5, y5)) - np.array((X[j,k], Y[j,k]))) - 0.2)**2)
     else:
