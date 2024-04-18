@@ -225,35 +225,39 @@ def infotaxis(robot_x, robot_y, belief):
     entropies = []
     current_entropy = calc_entropy(belief)
     for direction in directions:
-        # breakpoint()
         belief_pos = new_bayes_update(np.copy(belief), robot_x + direction[0], robot_y + direction[1], True)
         belief_neg = new_bayes_update(np.copy(belief), robot_x + direction[0], robot_y + direction[1], False)
 
         entropy_pos = calc_entropy(belief_pos)
         entropy_neg = calc_entropy(belief_neg)
-        if robot_y - 3 < 0:
-            if robot_x - 3 < 0:
-                tmp_belief_pos = belief[robot_y:robot_y+4, robot_x:robot_x+4]
-            elif robot_x + 3 >= 25:
-                tmp_belief_pos = belief[robot_y:robot_y+4, robot_x-3:]
-            else:
-                tmp_belief_pos = belief[robot_y:robot_y+4, robot_x-3:robot_x+4]
-        elif robot_y + 3 >= 25:
-            if robot_x - 3 < 0:
-                tmp_belief_pos = belief[robot_y-3:, robot_x:robot_x+4]
-            elif robot_x + 3 >= 25:
-                tmp_belief_pos = belief[robot_y-3:, robot_x-3:]
-            else:
-                tmp_belief_pos = belief[robot_y-3:, robot_x-3:robot_x+4]
-        else:
-            if robot_x - 3 < 0:
-                tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x:robot_x+4]
-            elif robot_x + 3 >= 25:
-                tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:]
-            else:
-                tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:robot_x+4]
-                tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:robot_x+4]
-        p_pos = np.sum(np.multiply(tmp_belief_pos, tmp_pos[:tmp_belief_pos.shape[0], :tmp_belief_pos.shape[1]]))
+        p_pos = 0
+        likelihood = get_likelihood(robot_x + direction[0], robot_y + direction[1], True)
+        for i in range(belief.shape[0]):
+            for j in range(belief.shape[1]):
+                p_pos += belief[i,j] * likelihood[i,j]
+        # if robot_y - 3 < 0:
+        #     if robot_x - 3 < 0:
+        #         tmp_belief_pos = belief[robot_y:robot_y+4, robot_x:robot_x+4]
+        #     elif robot_x + 3 >= 25:
+        #         tmp_belief_pos = belief[robot_y:robot_y+4, robot_x-3:]
+        #     else:
+        #         tmp_belief_pos = belief[robot_y:robot_y+4, robot_x-3:robot_x+4]
+        # elif robot_y + 3 >= 25:
+        #     if robot_x - 3 < 0:
+        #         tmp_belief_pos = belief[robot_y-3:, robot_x:robot_x+4]
+        #     elif robot_x + 3 >= 25:
+        #         tmp_belief_pos = belief[robot_y-3:, robot_x-3:]
+        #     else:
+        #         tmp_belief_pos = belief[robot_y-3:, robot_x-3:robot_x+4]
+        # else:
+        #     if robot_x - 3 < 0:
+        #         tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x:robot_x+4]
+        #     elif robot_x + 3 >= 25:
+        #         tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:]
+        #     else:
+        #         tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:robot_x+4]
+        #         tmp_belief_pos = belief[robot_y-3:robot_y+4, robot_x-3:robot_x+4]
+        # p_pos = np.sum(np.multiply(tmp_belief_pos, tmp_pos[:tmp_belief_pos.shape[0], :tmp_belief_pos.shape[1]]))
         p_neg = 1 - p_pos
         entropy = p_pos * (entropy_pos - current_entropy) + p_neg * (entropy_neg - current_entropy)
         entropies.append(entropy)
@@ -286,29 +290,29 @@ def infotaxis(robot_x, robot_y, belief):
 #|%%--%%| <wXBtKx02zm|zO08PorjKT>
 def get_bayes():
     bayes = np.array([[0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25],
-                        [1.0, 0.33, 0.33, 0.33, 0.33, 0.33, 1.0],
-                        [1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0],
-                        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
-                        [1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0],
-                        [1.0, 0.33, 0.33, 0.33, 0.33, 0.33, 1.0],
-                        [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]])
+                      [0.0, 0.33, 0.33, 0.33, 0.33, 0.33, 0.0],
+                      [0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0],
+                      [0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+                      [0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0],
+                      [0.0, 0.33, 0.33, 0.33, 0.33, 0.33, 0.0],
+                      [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]])
     return bayes
 
 def get_reverse_bayes():
     reverse_bayes = get_bayes()
     for i in range(reverse_bayes.shape[0]):
         for j in range(reverse_bayes.shape[1]):
-            if reverse_bayes[i,j] != 1.0:
-                reverse_bayes[i,j] = 1 - reverse_bayes[i,j]
+            reverse_bayes[i,j] = 1 - reverse_bayes[i,j]
     return reverse_bayes
 
 def get_likelihood(x, y, sensor_reading):
-    likelihood = np.ones((25, 25))
     # breakpoint()
     try:
         if sensor_reading:
+            likelihood = np.zeros((25, 25))
             bayes = get_bayes()
         else:
+            likelihood = np.ones((25, 25))
             bayes = get_reverse_bayes()
 
         # Define the bounds for slicing
@@ -358,7 +362,7 @@ found = False
 # fig, axs = plt.subplots(5,2,figsize=(100,100))
 row, col = 0, 0
 entropy = 100
-for i in range(150):
+for i in range(100):
     if robot_x == food_x and robot_y == food_y:
         belief[robot_y, robot_x] = 1.0
     if entropy < 1e-3:
