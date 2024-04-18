@@ -208,43 +208,7 @@ for i in range(100):
         belief = bayes_update(belief, robot_x, robot_y, False)
 plt.show()
 
-#|%%--%%| <eqe6nalgjz|zO08PorjKT>
-def get_bayes():
-    bayes = np.array([[0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25],
-                        [0.0, 0.33, 0.33, 0.33, 0.33, 0.33, 0.0],
-                        [0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0],
-                        [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-                        [0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0],
-                        [0.0, 0.33, 0.33, 0.33, 0.33, 0.33, 0.0],
-                        [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]])
-    return bayes
-
-def get_reverse_bayes():
-    reverse_bayes = get_bayes()
-    for i in range(reverse_bayes.shape[0]):
-        for j in range(reverse_bayes.shape[1]):
-            if reverse_bayes[i,j] != 0:
-                reverse_bayes[i,j] = 1 - reverse_bayes[i,j]
-    return reverse_bayes
-
-def get_likelihood(x, y, sensor_reading):
-    likelihood = np.zeros((25, 25))
-    breakpoint()
-    if sensor_reading:
-        bayes = get_bayes()
-        likelihood[y + -bayes.shape[0]//2 : y + bayes.shape[0]//2+1, x + -bayes.shape[1]//2 : x + bayes.shape[1]//2+1] = bayes
-    else:
-        reverse_bayes = get_reverse_bayes()
-        likelihood[y + -reverse_bayes.shape[0]//2 : y + reverse_bayes.shape[0]//2+1,
-                   x + -reverse_bayes.shape[1]//2 : x + reverse_bayes.shape[1]//2+1] = reverse_bayes
-    return likelihood
-
-def new_bayes_update(belief, x, y, sensor_reading):
-    likelihood = get_likelihood(x, y, sensor_reading)
-    belief = np.multiply(belief, likelihood) / np.sum(np.multiply(belief, likelihood))
-    return belief
-
-#|%%--%%| <zO08PorjKT|wXBtKx02zm>
+#|%%--%%| <eqe6nalgjz|wXBtKx02zm>
 
 def calc_entropy(belief):
     entropy = 0
@@ -319,7 +283,60 @@ def infotaxis(robot_x, robot_y, belief):
     return robot_x, robot_y, current_entropy
 
 
-#|%%--%%| <NJX6vwV53I|bcAmIlQ6H0>
+#|%%--%%| <wXBtKx02zm|zO08PorjKT>
+def get_bayes():
+    bayes = np.array([[0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25],
+                        [1.0, 0.33, 0.33, 0.33, 0.33, 0.33, 1.0],
+                        [1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0],
+                        [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+                        [1.0, 1.0, 0.5, 0.5, 0.5, 1.0, 1.0],
+                        [1.0, 0.33, 0.33, 0.33, 0.33, 0.33, 1.0],
+                        [0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25]])
+    return bayes
+
+def get_reverse_bayes():
+    reverse_bayes = get_bayes()
+    for i in range(reverse_bayes.shape[0]):
+        for j in range(reverse_bayes.shape[1]):
+            if reverse_bayes[i,j] != 1.0:
+                reverse_bayes[i,j] = 1 - reverse_bayes[i,j]
+    return reverse_bayes
+
+def get_likelihood(x, y, sensor_reading):
+    likelihood = np.ones((25, 25))
+    # breakpoint()
+    try:
+        if sensor_reading:
+            bayes = get_bayes()
+        else:
+            bayes = get_reverse_bayes()
+
+        # Define the bounds for slicing
+        y_start = np.clip(y - bayes.shape[0] // 2, 0, None)
+        y_end = np.clip(y + bayes.shape[0] // 2 + 1, None, likelihood.shape[0])
+        x_start = np.clip(x - bayes.shape[1] // 2, 0, None)
+        x_end = np.clip(x + bayes.shape[1] // 2 + 1, None, likelihood.shape[1])
+
+        # Perform slicing and update likelihood
+        likelihood_slice = likelihood[y_start:y_end, x_start:x_end]
+        bayes_slice = bayes[
+            bayes.shape[0] // 2 - (y - y_start):bayes.shape[0] // 2 + (y_end - y),
+            bayes.shape[1] // 2 - (x - x_start):bayes.shape[1] // 2 + (x_end - x),
+        ]
+        likelihood[y_start:y_end, x_start:x_end] = bayes_slice
+
+        return likelihood
+
+    except ValueError:
+        breakpoint()
+
+def new_bayes_update(belief, x, y, sensor_reading):
+    likelihood = get_likelihood(x, y, sensor_reading)
+    # breakpoint()
+    belief = np.multiply(belief, likelihood) / np.sum(np.multiply(belief, likelihood))
+    return belief
+
+#|%%--%%| <zO08PorjKT|bcAmIlQ6H0>
 
 # Part 2
 
