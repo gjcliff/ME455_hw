@@ -135,6 +135,7 @@ simulator = bernoulli_distribution(simulator, food_x, food_y)
 found = False
 fig, axs = plt.subplots(2,5,figsize=(50,25))
 fig.subplots_adjust(hspace=0.1, wspace=0.3)
+fig.suptitle("Problem 1 3rd Pic")
 row, col = 0, 0
 for i in range(100):
     if robot_x == food_x and robot_y == food_y:
@@ -318,6 +319,7 @@ for i in range(100):
 
 fig, axs = plt.subplots(2,5,figsize=(50, 25))
 fig.subplots_adjust(hspace=0.1, wspace=0.3)
+fig.suptitle("Problem 2 3rd Pic")
 row, col = 0, 0
 print(f"len beliefs: {len(beliefs)}, len_beliefs//10: {len(beliefs)//10}")
 for i in range(len(beliefs)//10, len(beliefs)+1,len(beliefs)//10):
