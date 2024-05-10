@@ -62,6 +62,7 @@ V = gradients[:,1].reshape(X.shape)
 
 # plot xk_initial, xk_final, and the path xk_list
 xk_list = np.array(xk_list)
+plt.scatter(xk_list[:,0], xk_list[:,1], c='b', s=7)
 plt.plot(xk_list[:,0], xk_list[:,1], '-')
 plt.plot(xk_initial[0], xk_initial[1], 'ro')
 plt.plot(xk_final[0], xk_final[1], 'go')
@@ -71,30 +72,15 @@ plt.ylim(-5,5)
 plt.xlabel('x1')
 plt.ylabel('x2')
 plt.title('Armijo Line Search')
+plt.savefig('problem2.png')
 plt.show()
 
-# plt.savefig('armijo_line_search.png')
 
 #|%%--%%| <NJgmDxKlFd|IwmgquwXVi>
 r"""°°°
 Problem 3
 °°°"""
-#|%%--%%| <IwmgquwXVi|pxXurdf3bT>
-
-# define parameters
-dt = 0.1
-x0 = np.array([0.0, 0.0, np.pi/2.0])
-tsteps = 63
-init_u_traj = np.tile(np.array([1.0, -0.5]), reps=(tsteps,1))
-
-Q_x = np.diag([10.0, 10.0, 2.0])
-R_u = np.diag([4.0, 2.0])
-P1 = np.diag([20.0, 20.0, 5.0])
-
-Q_z = np.diag([5.0, 5.0, 1.0])
-R_v = np.diag([2.0, 1.0])
-
-#|%%--%%| <pxXurdf3bT|PHHpmH2yCb>
+#|%%--%%| <IwmgquwXVi|PHHpmH2yCb>
 
 def dyn(xt, ut):
     xdot = np.array([np.cos(xt[2]) * ut[0],
@@ -117,7 +103,11 @@ def get_B(t, xt, ut):
     return B
 
 def step(xt, ut):
-    xt_new = xt + dt * dyn(xt, ut)  # recommended: replace it with RK4 integration
+    k1 = dt * dyn(xt, ut)
+    k2 = dt * dyn(xt + 0.5 * k1, ut)
+    k3 = dt * dyn(xt + 0.5 * k2, ut)
+    k4 = dt * dyn(xt + k3, ut)
+    xt_new = xt + (1 / 6) * (k1 + 2 * k2 + 2 * k3 + k4)
     return xt_new
 
 
@@ -200,7 +190,7 @@ def ilqr_iter(x0, u_traj):
             [M_21, M_22]
         ])
 
-        m_1 = -Bt @ np.linalg.inv(R_v) @ bt.T
+        m_1 = -Bt @ np.linalg.inv(R_v) @ bt
         m_2 = -at
         dyn_vec = np.hstack([m_1, m_2])
 
@@ -248,7 +238,22 @@ def ilqr_iter(x0, u_traj):
 
     return v_traj
 
-#|%%--%%| <lPXAoBSw0C|FBcyeniF8x>
+#|%%--%%| <lPXAoBSw0C|pxXurdf3bT>
+
+# define parameters
+dt = 0.1
+x0 = np.array([0.0, 0.0, np.pi/2.0])
+tsteps = 63
+init_u_traj = np.tile(np.array([1.0, -0.5]), reps=(tsteps,1))
+
+Q_x = np.diag([95.0, 10.0, 2.0])
+R_u = np.diag([4.0, 2.0])
+P1 = np.diag([20.0, 20.0, 5.0])
+
+Q_z = np.diag([5.0, 5.0, 1.0])
+R_v = np.diag([2.0, 1.0])
+
+#|%%--%%| <pxXurdf3bT|FBcyeniF8x>
 
 # Start iLQR iterations here
 
@@ -256,7 +261,7 @@ u_traj = init_u_traj.copy()
 x_traj_initial = None
 loss_list = []
 time = np.arange(tsteps) * dt
-fig, ax = plt.subplots(3,1, figsize=(3, 5))
+fig, ax = plt.subplots(3,1, figsize=(6, 10))
 plt.subplots_adjust(hspace=0.5)
 for iter in range(10):
     # forward simulate the current trajectory
@@ -281,17 +286,16 @@ for iter in range(10):
     alpha = 1e-04
     beta = 0.5
 
+    print('Iter: {:d}'.format(iter))
+    print(f"Loss: {np.sum([loss(t*dt, x_traj[t], u_traj[t]) for t in range(tsteps)])}")
+    print(f"other loss: {np.sum([loss(t*dt, x_traj[t], u_traj[t] + gamma * v_traj[t]) for t in range(tsteps)])}")
     total_loss = np.sum([loss(t*dt, x_traj[t], u_traj[t]) for t in range(tsteps)])
     total_other_loss = np.sum([loss(t*dt, x_traj[t], u_traj[t] + gamma * v_traj[t]) for t in range(tsteps)])
     loss_list.append(total_loss)
 
-    print(f"Iteration {iter}: Loss = {total_loss}")
-    print(f"Other Loss = {total_other_loss}")
-    print(f"np.sum(v_traj * v_traj) = {np.sum(v_traj * v_traj)}")
     while total_other_loss > total_loss + alpha * gamma * np.sum(v_traj * v_traj):
         gamma = beta * gamma
         total_other_loss = np.sum([loss(t*dt, x_traj[t], u_traj[t] + gamma * v_traj[t]) for t in range(tsteps)])
-        print(f"new other lsos: {total_other_loss}")
 
     # update control for the next iteration
     u_traj += gamma * v_traj
@@ -302,7 +306,7 @@ ax[0].plot(desired_traj[:,0], desired_traj[:,1], linestyle='-', color='r', label
 ax[0].plot(x_traj[:,0], x_traj[:,1], linestyle='-', color='k', label="Converged Trajectory")
 ax[0].set_title('State Trajectory')
 ax[0].legend(loc='upper right')
-ax[0].set_xlim(0, 4)
+ax[0].set_xlim(0, 5)
 ax[0].set_ylim(-2.25, 2.25)
 
 ax[1].plot(time, u_traj[:,0], label='u1')
@@ -317,8 +321,9 @@ ax[2].set_title('Objective Value')
 ax[2].set_xlabel('Iteration')
 ax[2].set_ylabel('Objective')
 ax[2].set_xlim(0, 9)
-ax[2].set_ylim(0, 2000)
+ax[2].set_ylim(0, 4000)
 
+plt.savefig('problem3_3.png', dpi=500)
 plt.show()
 
 # plt.plot(time, u_traj[:,0], label='u1')
