@@ -9,7 +9,7 @@ Please see handwritten pages for problem 1.
 ![problem_2](./problem2.png)
 
 ### Problem 3
-![problem_3](./problem3.png)
+<img src="./problem3.png" style="width: 500px;"/>
 
 I'm not really sure why I couldn't get my plots to look like the example plots,
 however I think there must be something wrong with either my iLQR algorithm
@@ -33,8 +33,7 @@ P1 = np.diag([20.0, 20.0, 5.0])
 
 Q_z = np.diag([5.0, 5.0, 1.0])
 R_v = np.diag([2.0, 1.0])  
-![problem_3_2](./problem3_2.png)
-
+<img src="./problem3_2.png" style="width: 500px;"/>  
 The converged trajectory seems to be focusing mainly on the initial trajectory,
 and not the desired trajectory. 
 
@@ -44,9 +43,8 @@ position of the initial trajectory.
 
 Turns out all I really needed to do was change one of the values on the diagonal
 in the Qx matrix:
-Q_x = np.diag([95.0, 10.0, 2.0])
-![problem_3_3](./problem3_3.png)
-
+Q_x = np.diag([95.0, 10.0, 2.0])  
+<img src="./problem3_3.png" style="width: 500px;"/>  
 This algorithm was tough to handle, I think it's possible it's slightly working,
 however I can't be sure.
 
