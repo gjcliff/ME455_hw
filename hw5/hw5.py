@@ -249,7 +249,7 @@ Begin iLQR Iterations
 °°°"""
 #|%%--%%| <0wOwj2lSOF|uea1Kt4g4G>
 
-init_u_traj = np.tile(np.array([0.1, 0.1]), reps=(tsteps,1))
+init_u_traj = np.tile(np.array([0.05, 0.02]), reps=(tsteps,1))
 
 x0 = np.ones(2) * 0.3
 u_traj = init_u_traj.copy()
